@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { getFirestore, collection, addDoc, Timestamp, query, where, getDocs } from 'firebase/firestore';
+import {
+  getFirestore,
+  collection,
+  // addDoc, // removed: using setDoc for custom IDs
+  doc,
+  setDoc,
+  getDoc,
+  Timestamp,
+  query,
+  where,
+  getDocs
+} from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { useBuilding } from '../Context/BuildingContext';
 import './FormQuestions.css';
@@ -16,7 +27,19 @@ function BuildingInfoPage() {
     const handleBack = () => {
         navigate(-1);
     };
- 
+
+    // sanitize string to be safe for Firestore IDs and readable
+    const sanitizeForId = (str) =>
+      String(str || '')
+        .trim()
+        // remove Firestore-forbidden characters and reduce repeated whitespace
+        .replace(/[.#$/\[\]]/g, '')
+        .replace(/\s+/g, '_')
+        // remove anything not alphanumeric or underscore or hyphen
+        .replace(/[^a-zA-Z0-9_\-]/g, '')
+        // trim long tails
+        .slice(0, 200);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
  
@@ -26,7 +49,7 @@ function BuildingInfoPage() {
         }
  
         try {
-            // Check for existing building with matching data
+            // First: keep your existing exact-match check (buildingName + buildingAddress + companyName)
             const q = query(
                 collection(db, 'Buildings'),
                 where('buildingName', '==', buildingName),
@@ -36,43 +59,47 @@ function BuildingInfoPage() {
             const querySnapshot = await getDocs(q);
  
             if (!querySnapshot.empty) {
-                // Existing building found
+                // Existing building found (by exact fields) — reuse it
                 const existingBuildingDoc = querySnapshot.docs[0];
                 setBuildingId(existingBuildingDoc.id);
                 navigate('/form'); // Navigate to the form page
                 return; // Stop further processing
             }
  
-            // No existing building found, create a new one
-            const buildingId = generateUniqueBuildingId();
-            const buildingRef = await addDoc(collection(db, 'Buildings'), {
-                buildingId,
+            // Build custom ID using Company_Building_Year
+            const currentYear = new Date().getFullYear();
+            const companyPart = sanitizeForId(companyName);
+            const buildingPart = sanitizeForId(buildingName);
+            const customDocId = `${companyPart}_${buildingPart}_${currentYear}`;
+ 
+            // Check if a document already exists at that custom path
+            const buildingRef = doc(db, 'Buildings', customDocId);
+            const existingById = await getDoc(buildingRef);
+            if (existingById.exists()) {
+              // Document with our custom ID already exists — reuse it
+              console.log('Found existing building doc by custom ID:', customDocId);
+              setBuildingId(customDocId);
+              navigate('/form');
+              return;
+            }
+ 
+            // Create the document with the custom ID (setDoc won't auto-generate random ID)
+            await setDoc(buildingRef, {
+                buildingId: customDocId,
                 buildingName,
                 buildingAddress,
                 companyName,
                 timestamp: Timestamp.now()
             });
  
-            console.log('Building info submitted successfully! Document ID:', buildingRef.id);
-            setBuildingId(buildingRef.id);
+            console.log('Building info submitted successfully! Document ID:', customDocId);
+            setBuildingId(customDocId);
             navigate('/form');
         } catch (error) {
             console.error('Error saving building info:', error);
             alert('Failed to save building info. Please try again.');
         }
     };
- 
-    // Function to generate a unique building ID (you can customize this)
-    const generateUniqueBuildingId = () => {
-        // Option 1: Using a library like `uuid`
-        // import { v4 as uuidv4 } from 'uuid';
-        // return uuidv4().slice(0, 10); // Shorten the UUID
-     
-        // Option 2: Create a custom ID generator
-        const timestamp = Date.now().toString().slice(-8); // Get last 8 digits of timestamp
-        const randomPart = Math.floor(Math.random() * 100000).toString().padStart(3, '0'); // Pad with zeros
-        return `B-${timestamp}-${randomPart}`; // Customize the format
-      };
  
     return (
         <div className="form-page">
