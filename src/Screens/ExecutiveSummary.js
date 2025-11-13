@@ -1,4 +1,3 @@
-// src/Screens/ExecutiveSummary.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import jsPDF from 'jspdf';
