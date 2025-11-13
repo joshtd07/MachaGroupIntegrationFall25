@@ -270,7 +270,6 @@ function ExecutiveSummary() {
                      </button>
                  </div>
 
-
                  <h2>Executive Summary</h2>
                  <label>
                      1) Purpose:
