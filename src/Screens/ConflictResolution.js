@@ -57,6 +57,10 @@ function ConflictResolutionFormPage() {
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState(null); // Added loadError state
 
+    // This computes the total number of questions and how many have been answered (yes/no).
+    const totalQuestions = conflictResolutionQuestions.length;
+    const answeredCount = Object.values(formData).filter((v) => v === 'yes' || v === 'no').length;
+
     // useEffect using getDoc based on buildingId as document ID
     useEffect(() => {
         if (!buildingId) {
@@ -112,8 +116,14 @@ function ConflictResolutionFormPage() {
                      building: buildingRef,
                      ...(imageUrl && { imageUrl: imageUrl })
                  };
+                    // use to save questions answered 
+                    const total = conflictResolutionQuestions.length;
+                    const answered = Object.values(newFormData).filter(
+                        (v) => v === 'yes' || v === 'no'
+                    ).length;
+
                 // Use setDoc with merge to create or update the specific document
-                await setDoc(formDocRef, { formData: dataToSave }, { merge: true });
+                await setDoc(formDocRef, { formData: dataToSave, progress: { answered, total }, }, { merge: true });
                  // console.log("Form data updated:", dataToSave);
             } catch (error) {
                 console.error("Error saving form data:", error);
@@ -220,6 +230,12 @@ function ConflictResolutionFormPage() {
             </header>
 
             <main className="form-container">
+
+                 {/* text display of completion progress*/}
+                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                    {answeredCount} of {totalQuestions} questions answered
+                </p>
+
                 <form onSubmit={handleSubmit}>
                     <h2>Conflict Resolution Assessment Questions</h2>
 
