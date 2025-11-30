@@ -56,6 +56,9 @@ function DoorLocksPage() {
     // Loading/Error states for fetching data added
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState(null);
+    // This computes the total number of questions and how many have been answered (yes/no).
+    const totalQuestions = doorLockQuestions.length;
+    const answeredCount = Object.values(formData).filter((v) => v === 'yes' || v === 'no').length;
 
     // useEffect to fetch data, similar to SecurityGatesPage
     useEffect(() => {
@@ -112,7 +115,14 @@ function DoorLocksPage() {
                      building: buildingRef,
                      ...(imageUrl && { imageUrl: imageUrl }) // Keep existing imageUrl if present
                  };
-                await setDoc(formDocRef, { formData: dataToSave }, { merge: true });
+                 // handleChange calculates progress and saves alongside form data
+                    const total = doorLockQuestions.length;
+                    const answered = Object.values(newFormData).filter(
+                        (v) => v === 'yes' || v === 'no'
+                    ).length;
+
+                 // Save the data under the 'formData' key
+                await setDoc(formDocRef, { formData: dataToSave, progress: { answered, total }, }, { merge: true });
                 console.log("Form data updated in Firestore:", dataToSave);
             } catch (error) {
                 console.error("Error saving form data to Firestore:", error);
@@ -232,6 +242,10 @@ function DoorLocksPage() {
             </header>
 
             <main className="form-container">
+                {/* text display of completion progress*/}
+                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                    {answeredCount} of {totalQuestions} questions answered
+                </p>
                 <form onSubmit={handleSubmit}>
                     {/* Added h2 like SecurityGatesPage */}
                     <h2>Door Locks Assessment Questions</h2>

@@ -60,6 +60,9 @@ function AccessControlSoftwarePage() {
   const [imageUploadError, setImageUploadError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
+  // This computes the total number of questions and how many have been answered (yes/no).
+    const totalQuestions = accessControlSoftwareQuestions.length;
+    const answeredCount = Object.values(formData).filter((v) => v === 'yes' || v === 'no').length;
 
   // useEffect for fetching data - Looks good
   useEffect(() => {
@@ -112,7 +115,14 @@ function AccessControlSoftwarePage() {
                  building: buildingRef,
                  ...(imageUrl && { imageUrl: imageUrl }) // Include existing imageUrl
              };
-            await setDoc(formDocRef, { formData: dataToSave }, { merge: true });
+             // handleChange calculates progress and saves alongside form data
+                    const total = accessControlSoftwareQuestions.length;
+                    const answered = Object.values(newFormData).filter(
+                        (v) => v === 'yes' || v === 'no'
+                    ).length;
+
+                 // Save the data under the 'formData' key
+                await setDoc(formDocRef, { formData: dataToSave, progress: { answered, total }, }, { merge: true });
             // console.log("Form data updated:", dataToSave);
         } catch (error) {
             console.error("Error saving form data to Firestore:", error);
@@ -221,6 +231,10 @@ function AccessControlSoftwarePage() {
       </header>
 
       <main className="form-container">
+        {/* text display of completion progress*/}
+                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                    {answeredCount} of {totalQuestions} questions answered
+                </p>
         <form onSubmit={handleSubmit}>
           <h2>Access Control Software Questions</h2>
 

@@ -52,6 +52,9 @@ function AccessControlSystemsPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
   const [currentBuildingId, setCurrentBuildingId] = useState(null); // Added state for effective ID
+  // This computes the total number of questions and how many have been answered (yes/no).
+    const totalQuestions = accessControlQuestions.length;
+    const answeredCount = Object.values(formData).filter((v) => v === 'yes' || v === 'no').length;
 
   // Define Firestore path for this form
   const formDocPath = 'forms/Physical Security/Access Control Systems';
@@ -120,7 +123,14 @@ function AccessControlSystemsPage() {
                  building: buildingRef,
                  imageUrl: imageUrl // Persist current known image URL
             };
-            await setDoc(formDocRef, { formData: dataToSave }, { merge: true });
+            // handleChange calculates progress and saves alongside form data
+                    const total = accessControlQuestions.length;
+                    const answered = Object.values(newFormData).filter(
+                        (v) => v === 'yes' || v === 'no'
+                    ).length;
+
+                 // Save the data under the 'formData' key
+                await setDoc(formDocRef, { formData: dataToSave, progress: { answered, total }, }, { merge: true });
             // console.log("Form data updated:", dataToSave);
         } catch (error) {
             console.error("Error saving form data to Firestore:", error);
@@ -235,6 +245,10 @@ function AccessControlSystemsPage() {
       </header>
 
       <main className="form-container">
+        {/* text display of completion progress*/}
+                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                    {answeredCount} of {totalQuestions} questions answered
+                </p>
         <form onSubmit={handleSubmit}>
           <h2>Access Control Systems Assessment Questions</h2>
 
