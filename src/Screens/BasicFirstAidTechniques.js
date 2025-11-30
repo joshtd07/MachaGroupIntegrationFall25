@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getFirestore, collection, doc, getDoc, setDoc } from 'firebase/firestore'; // Added collection import (good practice, though not strictly needed by downstream code here)
+import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore'; // Added collection import (good practice, though not strictly needed by downstream code here)
 import { useNavigate } from 'react-router-dom';
 import { useBuilding } from '../Context/BuildingContext';
 import './FormQuestions.css';
@@ -73,7 +73,14 @@ function BasicFirstAidTechniquesFormPage() {
             if (imageUrl) {
                 dataToSave.imageUrl = imageUrl;
             }
-            await setDoc(formDocRef, { formData: dataToSave }, { merge: true });
+            // handleChange calculates progress and saves alongside form data
+                    const total = questions.length;
+                    const answered = Object.values(newFormData).filter(
+                        (v) => v === 'yes' || v === 'no'
+                    ).length;
+
+                 // Save the data under the 'formData' key
+                await setDoc(formDocRef, { formData: dataToSave, progress: { answered, total }, }, { merge: true });
             console.log("Form data saved to Firestore:", dataToSave);
         } catch (error) {
             console.error("Error saving form data to Firestore:", error);
@@ -192,6 +199,9 @@ function BasicFirstAidTechniquesFormPage() {
          { name: "record-analysis", label: "How are medical records or incident reports reviewed and analyzed to identify trends, evaluate response effectiveness, and inform continuous improvement efforts?" },
          { name: "documentation-responsibility-awareness", label: "Are staff members aware of their responsibilities regarding incident reporting, documentation protocols, and data privacy regulations when documenting basic first aid treatments?" }
     ];
+    // This computes the total number of questions and how many have been answered (yes/no).
+    const totalQuestions = questions.length;
+    const answeredCount = Object.values(formData).filter((v) => v === 'yes' || v === 'no').length;
 
     return (
         <div className="form-page">
@@ -204,6 +214,10 @@ function BasicFirstAidTechniquesFormPage() {
             </header>
 
             <main className="form-container">
+                {/* text display of completion progress*/}
+                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                    {answeredCount} of {totalQuestions} questions answered
+                </p>
                 <form onSubmit={handleSubmit}>
                     {/* Form title consistent with component purpose */}
                     <h2>Basic First Aid Techniques Assessment</h2>

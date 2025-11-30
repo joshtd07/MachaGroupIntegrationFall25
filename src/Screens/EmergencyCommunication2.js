@@ -63,7 +63,14 @@ function EmergencyCommunication2FormPage() {
 
         try {
             const formDocRef = doc(db, 'forms', 'Personnel Training and Awareness', 'Emergency Communication', buildingId);
-            await setDoc(formDocRef, { formData: newFormData }, { merge: true });
+            // handleChange calculates progress and saves alongside form data
+                    const total = questions.length;
+                    const answered = Object.values(newFormData).filter(
+                        (v) => v === 'yes' || v === 'no'
+                    ).length;
+
+                 // Save the data under the 'formData' key
+                await setDoc(formDocRef, { formData: newFormData, progress: { answered, total }, }, { merge: true });
             console.log("Form data saved to Firestore:", newFormData);
         } catch (error) {
             console.error("Error saving form data to Firestore:", error);
@@ -153,6 +160,27 @@ function EmergencyCommunication2FormPage() {
     if (loadError) {
         return <div>Error: {loadError}</div>;
     }
+    const questions = [
+    { name: "communicationDevices", label: "What communication devices and tools are provided to staff members for emergency communication purposes, such as two-way radios, mobile phones, intercom systems, or panic alarms?" },
+    { name: "deviceSelectionCriteria", label: "Are communication devices selected based on their reliability, range, durability, and compatibility with existing infrastructure to ensure effective communication capabilities during emergencies?" },
+    { name: "deviceMaintenance", label: "How are communication devices maintained, tested, and periodically inspected to verify functionality, battery life, signal strength, and readiness for use in emergency situations?" },
+    { name: "communicationProtocols", label: "Are standardized communication protocols and procedures established to facilitate clear, concise, and efficient communication among staff members, emergency responders, and relevant stakeholders during emergencies?" },
+    { name: "communicationChannels", label: "How are communication channels designated, prioritized, and utilized for different types of emergency communications, such as distress calls, status updates, incident reports, or coordination messages?" },
+    { name: "protocolAdherence", label: "What measures are in place to ensure adherence to communication protocols, minimize radio interference, avoid channel congestion, and prioritize emergency traffic during critical incidents?" },
+    { name: "staffTraining", label: "Are staff members provided with training on the proper use, operation, and protocols for emergency communication devices and systems?" },
+    { name: "trainingPrograms", label: "Do training programs include practical exercises, simulations, or role-playing scenarios to familiarize staff members with communication procedures, protocols, and equipment operation under simulated emergency conditions?" },
+    { name: "communicationProficiency", label: "How are staff members assessed for proficiency in emergency communication skills, such as effective radio etiquette, message clarity, active listening, and situational awareness during training exercises and drills?" },
+    { name: "systemIntegration", label: "How are communication systems integrated with broader emergency response plans, incident command structures, and coordination efforts within the school environment?" },
+    { name: "protocolAlignment", label: "Are communication protocols aligned with incident management protocols, resource allocation procedures, and decision-making frameworks to support effective coordination, information sharing, and situational awareness during emergencies?" },
+    { name: "externalCollaboration", label: "What mechanisms are in place to facilitate communication and collaboration with external agencies, such as emergency dispatch centers, law enforcement agencies, fire departments, or medical response teams, during emergency incidents?" },
+    { name: "redundancyMeasures", label: "Are redundancy measures and backup communication systems implemented to mitigate the risk of communication failures, network disruptions, or equipment malfunctions during emergencies?" },
+    { name: "backupCommunication", label: "How are redundant communication channels, alternative communication methods, or backup power sources utilized to ensure continuity of communication and information flow in the event of primary system failures or infrastructure damage?" },
+    { name: "communicationResilience", label: "What provisions are in place to maintain communication resilience, restore functionality, and adapt communication strategies to changing conditions or evolving threats during prolonged emergency incidents?" }
+];
+
+// This computes the total number of questions and how many have been answered (yes/no).
+    const totalQuestions = questions.length;
+    const answeredCount = Object.values(formData).filter((v) => v === 'yes' || v === 'no').length;
 
     return (
         <div>
@@ -165,6 +193,10 @@ function EmergencyCommunication2FormPage() {
                 </header>
 
                 <main className="form-container">
+                    {/* text display of completion progress*/}
+                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                    {answeredCount} of {totalQuestions} questions answered
+                </p>
                     <form onSubmit={handleSubmit}>
                         <h2>Emergency Communication Assessment</h2>
                         {[

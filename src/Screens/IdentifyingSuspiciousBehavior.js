@@ -60,7 +60,14 @@ function IdentifyingSuspiciousBehaviorFormPage() {
         try {
             const buildingRef = doc(db, 'Buildings', buildingId);
             const formDocRef = doc(db, 'forms', 'Personnel Training and Awareness', 'Identifying Suspicious Behaivor', buildingId);
-            await setDoc(formDocRef, { formData: { ...newFormData, building: buildingRef } }, { merge: true });
+            // handleChange calculates progress and saves alongside form data
+                    const total = questions.length;
+                    const answered = Object.values(newFormData).filter(
+                        (v) => v === 'yes' || v === 'no'
+                    ).length;
+
+                 // Save the data under the 'formData' key
+                await setDoc(formDocRef, { formData: newFormData, progress: { answered, total }, }, { merge: true });
             console.log("Form data saved to Firestore:", { ...newFormData, building: buildingRef });
         } catch (error) {
             console.error("Error saving form data to Firestore:", error);
@@ -121,6 +128,28 @@ function IdentifyingSuspiciousBehaviorFormPage() {
     if (loadError) {
         return <div>Error: {loadError}</div>;
     }
+    const questions = [
+
+        { name: "recognizing-suspicious-behavior", label: "Are staff members trained to recognize and identify indicators of suspicious behavior, unusual activity, or potential threats within the school environment?" },
+                            { name: "warning-sign-training", label: "What specific behaviors or actions are emphasized during training as potential warning signs of security concerns, such as aggression, hostility, erratic movements, or attempts to conceal weapons or contraband?" },
+                            { name: "maintaining-vigilance", label: "How are staff members educated on the importance of maintaining vigilance, situational awareness, and proactive observation to detect and report suspicious incidents promptly?" },
+                            { name: "reporting-procedures", label: "Are clear reporting procedures established and communicated to staff members for documenting and reporting observations of suspicious behavior or security-related concerns?" },
+                            { name: "response-training", label: "How are staff members trained to initiate timely and appropriate responses, such as notifying school administrators, security personnel, or law enforcement authorities, when encountering suspicious individuals or activities?" },
+                            { name: "confidentiality-measures", label: "What measures are in place to ensure confidentiality, anonymity, and protection from retaliation for staff members who report security-related incidents or raise concerns about potential threats?" },
+                            { name: "collaborating-with-colleagues", label: "How are staff members encouraged to communicate and collaborate with colleagues, security personnel, and other stakeholders to share information, insights, and observations related to security threats or suspicious behavior?" },
+                            { name: "information-sharing", label: "Are mechanisms in place to facilitate information sharing, debriefings, or post-incident discussions among staff members to analyze and learn from past experiences, identify emerging trends, and enhance threat recognition capabilities?" },
+                            { name: "threat-assessment-protocols", label: "What protocols are followed to coordinate threat assessment efforts, validate reported concerns, and determine appropriate follow-up actions or interventions based on the severity and credibility of identified threats?" },
+                            { name: "training-exercises", label: "Are staff members provided with scenario-based training exercises, simulations, or case studies to practice identifying and responding to various types of security threats or suspicious situations?" },
+                            { name: "simulate-realistic-scenarios", label: "How do scenario-based training sessions simulate realistic scenarios, challenge decision-making abilities, and test staff members' capacity to assess threats, evaluate risks, and implement appropriate security measures?" },
+                            { name: "evaluating-performance", label: "What feedback mechanisms are utilized to evaluate staff members' performance during scenario-based training exercises, reinforce key concepts, and address areas for improvement in threat recognition and response skills?" },
+                            { name: "recognizing-potential-biases", label: "Are staff members trained to recognize potential biases, stereotypes, or cultural factors that may influence their perceptions of suspicious behavior or threat indicators?" },
+                            { name: "cultural-sensitivity-programs", label: "How do training programs promote cultural sensitivity, inclusivity, and equity in threat assessment practices, ensuring that staff members avoid making assumptions based on race, ethnicity, religion, or other personal characteristics?" },
+                            { name: "open-dialogue-strategies", label: "What strategies are implemented to foster open dialogue, mutual respect, and trust among staff members, students, and community members, enhancing the effectiveness of threat recognition efforts and promoting a safe and supportive school environment for all?" }
+                        
+    ];
+    // This computes the total number of questions and how many have been answered (yes/no).
+    const totalQuestions = questions.length;
+    const answeredCount = Object.values(formData).filter((v) => v === 'yes' || v === 'no').length;
 
     return (
         <div>
@@ -133,6 +162,10 @@ function IdentifyingSuspiciousBehaviorFormPage() {
                 </header>
 
                 <main className="form-container">
+                    {/* text display of completion progress*/}
+                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                    {answeredCount} of {totalQuestions} questions answered
+                </p>
                     <form onSubmit={handleSubmit}>
                         <h2>3.1.1.4.1.1 Identifying Suspicious Behavior</h2>
                         {[

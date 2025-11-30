@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // Corrected Firestore imports
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'; // Keep serverTimestamp if needed inside formData
+import { getFirestore, doc, getDoc, setDoc,} from 'firebase/firestore'; // Keep serverTimestamp if needed inside formData
 // Added Functions imports
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { useNavigate } from 'react-router-dom';
@@ -70,6 +70,9 @@ function PostIncidentSupportFormPage() {
     const [imageUploadError, setImageUploadError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState(null);
+    // This computes the total number of questions and how many have been answered (yes/no).
+    const totalQuestions = postIncidentSupportQuestions.length;
+    const answeredCount = Object.values(formData).filter((v) => v === 'yes' || v === 'no').length;
 
     // useEffect for fetching data - Adjusted imageUrl fetch
     useEffect(() => {
@@ -120,7 +123,14 @@ function PostIncidentSupportFormPage() {
                      building: buildingRef,
                      ...(imageUrl && { imageUrl: imageUrl })
                  };
-                await setDoc(formDocRef, { formData: dataToSave }, { merge: true });
+                 // handleChange calculates progress and saves alongside form data
+                    const total = postIncidentSupportQuestions.length;
+                    const answered = Object.values(newFormData).filter(
+                        (v) => v === 'yes' || v === 'no'
+                    ).length;
+
+                 // Save the data under the 'formData' key
+                await setDoc(formDocRef, { formData: dataToSave, progress: { answered, total }, }, { merge: true });
                 // console.log("Form data updated:", dataToSave);
             } catch (error) {
                 console.error("Error saving form data to Firestore:", error);
@@ -232,6 +242,10 @@ function PostIncidentSupportFormPage() {
             </header>
 
             <main className="form-container">
+                {/* text display of completion progress*/}
+                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                    {answeredCount} of {totalQuestions} questions answered
+                </p>
                 <form onSubmit={handleSubmit}>
                      <h2>Post-Incident Support Questions</h2> {/* Added main heading */}
 
