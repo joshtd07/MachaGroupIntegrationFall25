@@ -6,6 +6,8 @@ import { useBuilding } from '../Context/BuildingContext';
 import './FormQuestions.css';
 import logo from '../assets/MachaLogo.png';
 import Navbar from "./Navbar";
+import CommentSection from "../components/CommentSection";
+
 
 // Define questions array outside the component
 const accessControlSoftwareQuestions = [
@@ -270,6 +272,10 @@ function AccessControlSoftwarePage() {
             {loading ? 'Submitting...' : 'Submit Final'}
           </button>
         </form>
+
+        {/* Add your new comment section below */}
+    <CommentSection formId="TEST_AccessControl_Sophia" />
+
       </main>
     </div>
   );

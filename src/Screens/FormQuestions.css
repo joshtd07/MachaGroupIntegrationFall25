@@ -157,3 +157,78 @@ h1 {
         width: 40px; /* Adjust logo size for smaller screens */
     }
 }
+
+/* Apply to ANY input whose name ends with "Comment" (your Additional comments fields) */
+input[name$="Comment"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #d1d5db;           /* neutral gray */
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: #fafafa;
+    transition: all 0.4s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  
+  input[name$="Comment"]:focus {
+    border-color: #3b82f6;                 /* blue focus */
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.25);
+    background-color: #ffffff;
+    outline: none;
+  }
+  
+  /* Temporary saved state (auto-resets) */
+  input[name$="Comment"].saved {
+    border-color: #22c55e;                 /* green */
+    box-shadow: 0 0 0 4px rgba(34,197,94,0.25);
+    background-color: #f6fff7;
+    animation: revertStyle 6s ease forwards; /* fade back to default after 6s */
+  }
+  
+  /* The small “Saved at …” message under the field */
+  .save-note {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #16a34a;                        /* green text */
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    animation: fadeIn 0.4s ease;
+  }
+  .save-note::before {
+    content: "✓";
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .save-note-time {
+    color: #6b7280;                        /* gray */
+    font-weight: 400;
+    font-style: italic;
+    opacity: 1;
+    animation: fadeOut 4s ease 2s forwards; /* wait 2s, then fade over 4s */
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-2px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; transform: translateY(-2px); }
+  }
+  @keyframes revertStyle {
+    0% {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34,197,94,0.25);
+      background-color: #f6fff7;
+    }
+    100% {
+      border-color: #d1d5db;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      background-color: #fafafa;
+    }
+  }
+  
