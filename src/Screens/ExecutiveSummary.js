@@ -1,3 +1,4 @@
+// Rewritten ExecutiveSummary.js — full file
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import jsPDF from 'jspdf';
@@ -463,7 +464,7 @@ function ExecutiveSummary() {
 
         addQuestionBlock('8) Points of Contact', formData.pointsOfContact || '-', null);
 
-        // --- Now print each assessment (all fetched assessments) in full, unsplit ---
+        // Print each assessment (all fetched assessments) in full
         if (assessments && assessments.length > 0) {
             addSectionHeader(`All Assessments (${assessments.length})`);
             for (const a of assessments) {
