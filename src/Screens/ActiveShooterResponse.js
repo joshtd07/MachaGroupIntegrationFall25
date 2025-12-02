@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getFirestore, collection, doc, getDoc, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { useBuilding } from '../Context/BuildingContext';
 import './FormQuestions.css';
@@ -76,7 +76,14 @@ function ActiveShooterResponseFormPage() {
              if (imageUrl) {
                 dataToSave.imageUrl = imageUrl;
             }
-            await setDoc(formDocRef, { formData: dataToSave }, { merge: true });
+            // handleChange calculates progress and saves alongside form data
+                    const total = questions.length;
+                    const answered = Object.values(newFormData).filter(
+                        (v) => v === 'yes' || v === 'no'
+                    ).length;
+
+                 // Save the data under the 'formData' key
+                await setDoc(formDocRef, { formData: dataToSave, progress: { answered, total }, }, { merge: true });
             console.log("Form data saved to Firestore:", dataToSave);
         } catch (error) {
             console.error("Error saving form data to Firestore:", error);
@@ -191,6 +198,9 @@ function ActiveShooterResponseFormPage() {
         { name: "asrDebriefings", label: "Are post-incident debriefings conducted to review response actions, identify lessons learned, address concerns, and implement improvements to emergency preparedness plans and procedures?" },
         { name: "asrFeedbackContribution", label: "How are staff members encouraged to share their experiences, provide feedback on training effectiveness, and contribute to the continuous improvement of active shooter response protocols?" }
     ];
+    // This computes the total number of questions and how many have been answered (yes/no).
+    const totalQuestions = questions.length;
+    const answeredCount = Object.values(formData).filter((v) => v === 'yes' || v === 'no').length;
 
 
     return (
@@ -203,6 +213,10 @@ function ActiveShooterResponseFormPage() {
             </header>
 
             <main className="form-container">
+                {/* text display of completion progress*/}
+                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                    {answeredCount} of {totalQuestions} questions answered
+                </p>
                 <form onSubmit={handleSubmit}>
                     {/* Consistent H2 */}
                     <h2>Active Shooter Response Questions</h2>

@@ -58,6 +58,10 @@ function FirstAidResponseFormPage() {
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState(null);
 
+     // This computes the total number of questions and how many have been answered (yes/no).
+    const totalQuestions = firstAidQuestions.length;
+    const answeredCount = Object.values(formData).filter((v) => v === 'yes' || v === 'no').length;
+
     // useEffect for fetching data on load - Looks good
     useEffect(() => {
         if (!buildingId) {
@@ -113,7 +117,14 @@ function FirstAidResponseFormPage() {
                 building: buildingRef,
                 ...(imageUrl && { imageUrl: imageUrl }) // Preserve existing imageUrl
             };
-            await setDoc(formDocRef, { formData: dataToSave }, { merge: true });
+                    // handleChange testing code
+                    const total = firstAidQuestions.length;
+                    const answered = Object.values(newFormData).filter(
+                        (v) => v === 'yes' || v === 'no'
+                    ).length;
+
+
+            await setDoc(formDocRef, { formData: dataToSave, progress: { answered, total }, }, { merge: true });
             // console.log("Form data auto-saved:", dataToSave);
         } catch (error) {
             console.error("Error auto-saving form data:", error);
@@ -218,6 +229,12 @@ function FirstAidResponseFormPage() {
             </header>
 
             <main className="form-container">
+            
+            {/* text display of completion progress*/}
+                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                    {answeredCount} of {totalQuestions} questions answered
+                </p>
+
                 <form onSubmit={handleSubmit}>
                      <h2>First Aid Response Questions</h2> {/* Added main heading */}
                     {/* Render questions dynamically using single map */}

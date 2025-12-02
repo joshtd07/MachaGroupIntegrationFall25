@@ -60,7 +60,14 @@ function ResponseProtocols2FormPage() {
         try {
             const buildingRef = doc(db, 'Buildings', buildingId); // Create buildingRef
             const formDocRef = doc(db, 'forms', 'Personnel Training and Awareness', 'Response Protocols', buildingId);
-            await setDoc(formDocRef, { formData: { ...newFormData, building: buildingRef } }, { merge: true }); // Use merge and add building
+// handleChange calculates progress and saves alongside form data
+                    const total = questions.length;
+                    const answered = Object.values(newFormData).filter(
+                        (v) => v === 'yes' || v === 'no'
+                    ).length;
+
+                 // Save the data under the 'formData' key
+                await setDoc(formDocRef, { formData: newFormData, progress: { answered, total }, }, { merge: true });
             console.log("Form data saved to Firestore:", { ...newFormData, building: buildingRef });
         } catch (error) {
             console.error("Error saving form data to Firestore:", error);
@@ -121,6 +128,26 @@ function ResponseProtocols2FormPage() {
     if (loadError) {
         return <div>Error: {loadError}</div>;
     }
+    const questions = [
+        { name: "immediateActionDescription", label: "What immediate actions are staff members trained to take in response to different types of emergencies, such as medical emergencies, fire incidents, hazardous material spills, or security threats?" },
+                        { name: "protocolsDetails", label: "Are response protocols established to guide staff members in promptly assessing the situation, activating the appropriate emergency response procedures, and initiating initial response actions to mitigate risks and ensure the safety of occupants?" },
+                        { name: "protocolPrioritization", label: "How do response protocols prioritize life safety, property protection, and incident stabilization to minimize harm, prevent escalation, and facilitate the orderly evacuation or sheltering of individuals as necessary?" },
+                        { name: "decisionMakingStructure", label: "How are decision-making responsibilities, authority levels, and incident command structures defined and communicated within the school organization during emergency situations?" },
+                        { name: "chainOfCommandTraining", label: "Are staff members trained to follow established chain of command protocols, communicate critical information effectively, and coordinate response efforts with designated incident commanders, safety officers, or emergency coordinators?" },
+                        { name: "coordinationProvisions", label: "What provisions are in place to ensure clear lines of communication, rapid decision-making, and effective coordination among responders, stakeholders, and external agencies involved in emergency response operations?" },
+                        { name: "emergencyCommunication", label: "How are emergency response procedures initiated and communicated to staff members, students, and visitors within the school environment?" },
+                        { name: "notificationSystems", label: "Are notification systems, alert mechanisms, and communication channels utilized to issue timely warnings, alarms, or instructions to occupants in the event of an emergency?" },
+                        { name: "responseTeamActivation", label: "What protocols are followed to activate emergency response teams, mobilize resources, and implement predetermined action plans based on the nature, severity, and location of the emergency incident?" },
+                        { name: "resourceAllocation", label: "How are resources, equipment, and facilities allocated and utilized during emergency response operations to support incident management, victim care, and logistical needs?" },
+                        { name: "resourceManagementProtocols", label: "Are resource management protocols established to prioritize resource allocation, track resource usage, and request additional support from external agencies or mutual aid partners as needed?" },
+                        { name: "essentialResourcesReadiness", label: "What mechanisms are in place to ensure the availability, accessibility, and readiness of essential resources, including emergency supplies, medical equipment, communication devices, and specialized personnel, to support response efforts effectively?" },
+                        { name: "informationGathering", label: "How do response protocols facilitate the collection, verification, and dissemination of critical information, situational updates, and incident intelligence to inform decision-making and response actions?" },
+                        { name: "situationalAssessmentTraining", label: "Are staff members trained to conduct rapid situational assessments, gather relevant data, and report observations, hazards, and emerging threats to incident commanders or designated authorities?" },
+                        { name: "informationIntegration", label: "What procedures are in place to integrate information from multiple sources, assess the impact of the emergency incident, and adapt response strategies based on changing circumstances, evolving threats, or new developments?" }
+    ];
+    // This computes the total number of questions and how many have been answered (yes/no).
+    const totalQuestions = questions.length;
+    const answeredCount = Object.values(formData).filter((v) => v === 'yes' || v === 'no').length;
 
     return (
         <div className="form-page">
@@ -132,6 +159,10 @@ function ResponseProtocols2FormPage() {
             </header>
 
             <main className="form-container">
+                {/* text display of completion progress*/}
+                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                    {answeredCount} of {totalQuestions} questions answered
+                </p>
                 <form onSubmit={handleSubmit}>
                     <h2>3.1.1.2.9 Response Protocols Assessment</h2>
                     {[

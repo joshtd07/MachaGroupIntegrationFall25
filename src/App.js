@@ -1,5 +1,5 @@
 import './App.css';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 import { BuildingProvider } from './Context/BuildingContext';
@@ -399,6 +399,31 @@ import AccessControlListsPage from './Screens/AccessControlLists';
 import ExecutiveSummary from './Screens/ExecutiveSummary'
 
 function App() {
+
+  useEffect(() => {
+    function handleBlur(e) {
+      const el = e.target;
+      if (!el.matches || !el.matches('input[name$="Comment"], textarea[name$="Comment"]')) return;
+  
+      el.classList.add('saved');
+  
+      let note = el.nextElementSibling;
+      if (!(note && note.classList && note.classList.contains('save-note'))) {
+        note = document.createElement('div');
+        note.className = 'save-note';
+        el.parentNode.insertBefore(note, el.nextSibling);
+      }
+  
+      const time = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      note.innerHTML = `Saved <span class="save-note-time">at ${time}</span>`;
+  
+      setTimeout(() => el.classList.remove('saved'), 6000);
+    }
+  
+    document.addEventListener('blur', handleBlur, true);
+    return () => document.removeEventListener('blur', handleBlur, true);
+  }, []);
+   
   return (
     <div className="App">
     <BuildingProvider>

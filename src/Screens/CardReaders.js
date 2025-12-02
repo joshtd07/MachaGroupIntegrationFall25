@@ -59,6 +59,9 @@ function CardReadersPage() {
     const [loadError, setLoadError] = useState(null);
     // Step 3: Add state for currentBuildingId
     const [currentBuildingId, setCurrentBuildingId] = useState(null);
+    // This computes the total number of questions and how many have been answered (yes/no).
+    const totalQuestions = cardReaderQuestions.length;
+    const answeredCount = Object.values(formData).filter((v) => v === 'yes' || v === 'no').length;
 
     // Step 4: Modify useEffect for buildingId handling and data fetching
     useEffect(() => {
@@ -135,7 +138,14 @@ function CardReadersPage() {
                     building: buildingRef,
                     ...(imageUrl && { imageUrl: imageUrl }) // Keep existing image URL if present
                 };
-                await setDoc(formDocRef, { formData: dataToSave }, { merge: true });
+                // handleChange calculates progress and saves alongside form data
+                    const total = cardReaderQuestions.length;
+                    const answered = Object.values(newFormData).filter(
+                        (v) => v === 'yes' || v === 'no'
+                    ).length;
+
+                 // Save the data under the 'formData' key
+                await setDoc(formDocRef, { formData: dataToSave, progress: { answered, total }, }, { merge: true });
             } catch (error) {
                 console.error("Error saving form data on change:", error);
                 // Add user feedback if necessary, e.g., a small non-blocking status indicator
@@ -263,6 +273,10 @@ function CardReadersPage() {
             </header>
 
             <main className="form-container">
+                {/* text display of completion progress*/}
+                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                    {answeredCount} of {totalQuestions} questions answered
+                </p>
                 {/* Display load error if it occurred but we have a buildingId */}
                 {loadError && <p style={{ color: 'red' }}>Error: {loadError}</p>}
 

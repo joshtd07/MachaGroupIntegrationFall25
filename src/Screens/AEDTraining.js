@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // Added necessary imports: getDoc, setDoc, getFunctions, httpsCallable
-import { getFirestore, collection, doc, getDoc, setDoc } from 'firebase/firestore';
+import { getFirestore,  doc, getDoc, setDoc } from 'firebase/firestore';
 // Removed storage imports, addDoc
 import { useNavigate } from 'react-router-dom';
 import { useBuilding } from '../Context/BuildingContext';
@@ -79,7 +79,14 @@ function AEDTrainingFormPage() {
              if (imageUrl) {
                 dataToSave.imageUrl = imageUrl;
             }
-            await setDoc(formDocRef, { formData: dataToSave }, { merge: true });
+            // handleChange calculates progress and saves alongside form data
+                    const total = questions.length;
+                    const answered = Object.values(newFormData).filter(
+                        (v) => v === 'yes' || v === 'no'
+                    ).length;
+
+                 // Save the data under the 'formData' key
+                await setDoc(formDocRef, { formData: dataToSave, progress: { answered, total }, }, { merge: true });
             console.log("Form data saved to Firestore:", dataToSave);
         } catch (error) {
             console.error("Error saving form data to Firestore:", error);
@@ -193,7 +200,8 @@ function AEDTrainingFormPage() {
         { name: "sudden-cardiac-response-training", label: "Are staff members trained to recognize the signs of sudden cardiac arrest, activate the emergency response system, and initiate AED use promptly and effectively?" },
         { name: "aed-coordination-mechanisms", label: "What coordination mechanisms are in place to facilitate communication, collaboration, and teamwork among responders during AED deployment and CPR administration?" },
     ];
-
+        const totalQuestions = questions.length;
+        const answeredCount = Object.values(formData).filter((v) => v === 'yes' || v === 'no').length;
 
     return (
         <div className="form-page">
@@ -206,6 +214,10 @@ function AEDTrainingFormPage() {
             </header>
 
             <main className="form-container">
+                {/* text display of completion progress*/}
+                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                    {answeredCount} of {totalQuestions} questions answered
+                </p>
                 <form onSubmit={handleSubmit}>
                      {/* Simplified Title */}
                     <h2>AED Training Questions</h2>

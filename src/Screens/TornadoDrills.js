@@ -50,6 +50,10 @@ function TornadoDrillsFormPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
 
+  // This computes the total number of questions and how many have been answered (yes/no).
+    const totalQuestions = tornadoDrillQuestions.length;
+    const answeredCount = Object.values(formData).filter((v) => v === 'yes' || v === 'no').length;
+
   // useEffect for fetching data - Looks good
   useEffect(() => {
     if (!buildingId) {
@@ -101,6 +105,14 @@ function TornadoDrillsFormPage() {
                  building: buildingRef,
                  ...(imageUrl && { imageUrl: imageUrl })
              };
+             // handleChange calculates progress and saves alongside form data
+                    const total = tornadoDrillQuestions.length;
+                    const answered = Object.values(newFormData).filter(
+                        (v) => v === 'yes' || v === 'no'
+                    ).length;
+
+                 // Save the data under the 'formData' key
+                await setDoc(formDocRef, { formData: dataToSave, progress: { answered, total }, }, { merge: true });
             await setDoc(formDocRef, { formData: dataToSave }, { merge: true });
             // console.log("Form data updated:", dataToSave);
         } catch (error) {
@@ -208,6 +220,10 @@ function TornadoDrillsFormPage() {
       </header>
 
       <main className="form-container">
+        {/* text display of completion progress*/}
+                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                    {answeredCount} of {totalQuestions} questions answered
+                </p>
         <form onSubmit={handleSubmit}>
           <h2>Tornado Drill Assessment Questions</h2> {/* Added main heading */}
 
